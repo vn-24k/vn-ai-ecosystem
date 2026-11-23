@@ -7,17 +7,23 @@
       "name": "Error Trigger",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
-      "position": [240, 300]
+      "position": [
+        240,
+        300
+      ]
     },
     {
       "parameters": {
-        "jsCode": "const execution = $json.execution;\nconst workflow = $json.workflow;\nconst error = execution.error || {};\n\nconst correlationId = 'ERR-' + Date.now().toString(36).toUpperCase();\nconst timestamp = new Date().toISOString();\n\nconst alertMessage = `🚨 *ALERTA DE FALHA CRÍTICA — VN AI ECOSYSTEM*\\n\\n` +\n  `🆔 *Correlation ID:* \`${correlationId}\`\\n` +\n  `⚙️ *Workflow:* \`${workflow.name}\` (ID: ${workflow.id})\\n` +\n  `⏱️ *Timestamp:* \`${timestamp}\`\\n` +\n  `❌ *Erro:* ${error.message || 'Erro não especificado'}\\n\\n` +\n  `🔍 *Localização:* Nó \`${error.node?.name || 'Desconhecido'}\`\\n` +\n  `🛠️ *Ação:* Automação isolada. Nenhuma alteração destrutiva realizada.`;\n\nreturn [{\n  json: {\n    correlationId,\n    timestamp,\n    workflowId: workflow.id,\n    workflowName: workflow.name,\n    errorMessage: error.message,\n    alertMessage\n  }\n}];"
+        "jsCode": "const execution = $json.execution;\nconst workflow = $json.workflow;\nconst error = execution.error || {};\n\nconst correlationId = 'ERR-' + Date.now().toString(36).toUpperCase();\nconst timestamp = new Date().toISOString();\n\nconst alertMessage = '🚨 *ALERTA DE FALHA CRÍTICA — VN AI ECOSYSTEM*\\n\\n' +\n  '🆔 *Correlation ID:* `' + correlationId + '`\\n' +\n  '⚙️ *Workflow:* `' + workflow.name + '` (ID: ' + workflow.id + ')\\n' +\n  '⏱️ *Timestamp:* `' + timestamp + '`\\n' +\n  '❌ *Erro:* ' + (error.message || 'Erro não especificado') + '\\n\\n' +\n  '🔍 *Localização:* Nó `' + (error.node ? error.node.name : 'Desconhecido') + '`\\n' +\n  '🛠️ *Ação:* Automação isolada. Nenhuma alteração destrutiva realizada.';\n\nreturn [{\n  json: {\n    correlationId,\n    timestamp,\n    workflowId: workflow.id,\n    workflowName: workflow.name,\n    errorMessage: error.message,\n    alertMessage\n  }\n}];"
       },
       "id": "7b049d1e-c146-4dc4-bb50-32da0e25867e",
       "name": "Format Incident Envelope",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [460, 300]
+      "position": [
+        460,
+        300
+      ]
     },
     {
       "parameters": {
@@ -31,7 +37,10 @@
       "name": "Dispatch Telegram Alert",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [680, 300]
+      "position": [
+        680,
+        300
+      ]
     }
   ],
   "connections": {
