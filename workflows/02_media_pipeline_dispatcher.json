@@ -1,0 +1,66 @@
+{
+  "name": "02 - Cinema & Neural Audio Media Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-media",
+        "options": {}
+      },
+      "id": "e1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c",
+      "name": "Media Ingest Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $json.body || {};\nconst theme = payload.theme || 'Inovação e Soberania Digital';\nconst tone = payload.tone || 'Cinematográfico Paulistano';\n\nconst correlationId = 'MEDIA-' + Date.now().toString(36).toUpperCase();\n\nreturn [{\n  json: {\n    correlationId,\n    theme,\n    tone,\n    timestamp: new Date().toISOString(),\n    voiceParams: {\n      model: 's2.1-pro-free',\n      voice: 'minha-voz',\n      temperature: 0.85,\n      top_p: 0.88\n    }\n  }\n}];"
+      },
+      "id": "f2a3b4c5-d6e7-4a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Prepare Audio & Media Spec",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "2140439370",
+        "text": "=🎬 *ESTÚDIO DE MÍDIA — ORQUESTRAÇÃO DE CONTEÚDO*\\n\\n🆔 *ID:* `{{ $json.correlationId }}`\\n🎭 *Tema:* {{ $json.theme }}\\n🎙️ *Voz:* Fish Audio `minha-voz` (s2.1-pro-free)\\n✂️ *Decupagem:* Microfades Hann, eliminando pausas mortas >300ms\\n\\n_Disparando pipeline de produção cinematográfica..._",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "a3b4c5d6-e7f8-4a9b-0c1d-2e3f4a5b6c7d",
+      "name": "Notify Telegram Studio Start",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Media Ingest Webhook": {
+      "main": [
+        [
+          {
+            "node": "Prepare Audio & Media Spec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Audio & Media Spec": {
+      "main": [
+        [
+          {
+            "node": "Notify Telegram Studio Start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true
+}

@@ -1,0 +1,66 @@
+{
+  "name": "03 - Autonomous Software Factory & Deploy",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "build-software",
+        "options": {}
+      },
+      "id": "11223344-5566-7788-9900-aabbccddeeff",
+      "name": "Software Build Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body || {};\nconst projectName = (body.projectName || 'projeto-' + Date.now().toString(36)).toLowerCase();\nconst theme = body.theme || 'Dark Luxury Corporate';\n\nreturn [{\n  json: {\n    projectName,\n    theme,\n    githubUser: 'vn-24k',\n    deployTarget: 'Vercel',\n    antiRepetitionEngine: 'ROULETTE_REGISTRY.json',\n    cssIsolation: '.uiv_scoped_',\n    status: 'DISPATCHED'\n  }\n}];"
+      },
+      "id": "22334455-6677-8899-0011-bbccddeeff00",
+      "name": "Validate & Configure Build",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "2140439370",
+        "text": "=🚀 *FÁBRICA DE SOFTWARE — NOVO PROJETO INICIADO*\\n\\n📦 *Projeto:* `{{ $json.projectName }}`\\n🎨 *Tema:* {{ $json.theme }}\\n🎰 *Roleta:* Consulta a 59 templates exclusivos\\n🛡️ *Isolamento:* CSS estrito com zero vazamento global\\n🌐 *Destino:* GitHub (`vn-24k`) ➔ Deploy Vercel Oficial\\n\\n_Executando montagem com repositórios do arsenal..._",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "33445566-7788-9900-1122-ccddeeff0011",
+      "name": "Telegram Build Dispatch",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Software Build Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate & Configure Build",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Configure Build": {
+      "main": [
+        [
+          {
+            "node": "Telegram Build Dispatch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true
+}

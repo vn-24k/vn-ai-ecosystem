@@ -1,0 +1,119 @@
+{
+  "name": "01 - Telegram Executive Command Center",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["message", "callback_query"]
+      },
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+      "name": "Telegram Command Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const update = $json;\nconst msg = update.message || {};\nconst callback = update.callback_query || {};\n\nconst userId = msg.from?.id || callback.from?.id;\nconst text = (msg.text || callback.data || '').trim();\nconst isAuthorized = String(userId) === '2140439370';\n\nlet intent = 'UNKNOWN';\nif (text.startsWith('/start') || text.startsWith('/menu')) intent = 'MENU';\nelse if (text.startsWith('/software') || text.includes('build_software')) intent = 'SOFTWARE_FACTORY';\nelse if (text.startsWith('/media') || text.includes('gen_media')) intent = 'MEDIA_STUDIO';\nelse if (text.startsWith('/dissecar') || text.includes('dissect_yt')) intent = 'DISSECT_YOUTUBE';\nelse if (text.startsWith('/status')) intent = 'SYSTEM_STATUS';\n\nreturn [{\n  json: {\n    userId,\n    isAuthorized,\n    text,\n    intent,\n    chatId: '2140439370'\n  }\n}];"
+      },
+      "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+      "name": "Classify Command & Intent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.intent }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "MENU"
+            },
+            {
+              "value2": "SOFTWARE_FACTORY"
+            },
+            {
+              "value2": "MEDIA_STUDIO"
+            },
+            {
+              "value2": "DISSECT_YOUTUBE"
+            },
+            {
+              "value2": "SYSTEM_STATUS"
+            }
+          ]
+        }
+      },
+      "id": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
+      "name": "Route by Intent",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "2140439370",
+        "text": "⚡ *VN AI ECOSYSTEM — CENTRAL DE COMANDO EXECUTIVO*\n\nSelecione um motor para executar:",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": [
+                { "text": "🚀 Fábrica de Software", "additionalFields": { "callback_data": "build_software" } },
+                { "text": "🎬 Estúdio de Mídia", "additionalFields": { "callback_data": "gen_media" } }
+              ]
+            },
+            {
+              "row": [
+                { "text": "🧠 Dissecador de Elite", "additionalFields": { "callback_data": "dissect_yt" } },
+                { "text": "🛡️ Status dos Serviços", "additionalFields": { "callback_data": "/status" } }
+              ]
+            }
+          ]
+        }
+      },
+      "id": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
+      "name": "Send Interactive Menu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [960, 160]
+    }
+  ],
+  "connections": {
+    "Telegram Command Trigger": {
+      "main": [
+        [
+          {
+            "node": "Classify Command & Intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Command & Intent": {
+      "main": [
+        [
+          {
+            "node": "Route by Intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Intent": {
+      "main": [
+        [
+          {
+            "node": "Send Interactive Menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true
+}

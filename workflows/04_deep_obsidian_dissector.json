@@ -1,0 +1,66 @@
+{
+  "name": "04 - Deep Obsidian Dissector & Knowledge Graph",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dissect-youtube",
+        "options": {}
+      },
+      "id": "aa11bb22-cc33-dd44-ee55-ff6677889900",
+      "name": "Dissect Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body || {};\nconst channelUrl = body.channelUrl || '';\nconst channelName = body.channelName || 'Canal Estratégico';\n\nreturn [{\n  json: {\n    channelUrl,\n    channelName,\n    goldStandard: {\n      viewsThreshold: '100k+',\n      maxTopViews: 30,\n      recentVideos: 10\n    },\n    vaultPath: '/sdcard/Documents/Obsidian VN/VN/04 - Estudos/' + channelName,\n    dossierTemplate: '00 - Dossiê Mestre - ' + channelName + '.md',\n    crossLinks: ['Bússola Inabalável', 'Livro da Vida', 'TCC']\n  }\n}];"
+      },
+      "id": "bb22cc33-dd44-ee55-ff66-001122334455",
+      "name": "Apply Rule 18 Dissection Specs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "2140439370",
+        "text": "=🧠 *DISSECADOR COGNITIVO — REGRA 18 ATIVADA*\\n\\n📺 *Canal:* {{ $json.channelName }}\\n🏆 *Camada de Ouro:* Todos os vídeos com 100k+ views (Top 30)\\n⚡ *Camada de Atualização:* 10 vídeos mais recentes\\n📚 *Destino no Obsidian:* `{{ $json.vaultPath }}`\\n📊 *Dossiê:* Tabelas dinâmicas Dataview + Síntese Editorial\\n\\n_Iniciando extração limpa de transcrições e ancoragem de conhecimento..._",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "cc33dd44-ee55-ff66-0011-112233445566",
+      "name": "Notify Dissection Start",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Dissect Webhook": {
+      "main": [
+        [
+          {
+            "node": "Apply Rule 18 Dissection Specs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Rule 18 Dissection Specs": {
+      "main": [
+        [
+          {
+            "node": "Notify Dissection Start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true
+}

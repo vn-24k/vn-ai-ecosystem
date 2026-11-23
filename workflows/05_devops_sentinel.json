@@ -1,0 +1,71 @@
+{
+  "name": "05 - DevOps Infrastructure Sentinel & Self-Healing",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "dd44ee55-ff66-0011-2233-223344556677",
+      "name": "Periodic Healthcheck Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:5005/health",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "id": "ee55ff66-0011-2233-4455-334455667788",
+      "name": "Check WhatsApp Bridge (Port 5005)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const waStatus = $json.statusCode === 200 ? 'ONLINE' : 'OFFLINE';\n\nreturn [{\n  json: {\n    timestamp: new Date().toISOString(),\n    services: {\n      whatsapp_bridge: waStatus,\n      cloudflared_tunnel: 'MONITORED'\n    },\n    needsHealing: waStatus !== 'ONLINE'\n  }\n}];"
+      },
+      "id": "ff660011-2233-4455-6677-445566778899",
+      "name": "Evaluate Infrastructure Health",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Periodic Healthcheck Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check WhatsApp Bridge (Port 5005)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check WhatsApp Bridge (Port 5005)": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Infrastructure Health",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true
+}

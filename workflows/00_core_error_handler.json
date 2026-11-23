@@ -1,0 +1,65 @@
+{
+  "name": "00 - Centralized Error Handler & Incident Alert",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "c1f6b8b0-5804-4ec2-9e96-a185b14fa811",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const execution = $json.execution;\nconst workflow = $json.workflow;\nconst error = execution.error || {};\n\nconst correlationId = 'ERR-' + Date.now().toString(36).toUpperCase();\nconst timestamp = new Date().toISOString();\n\nconst alertMessage = `🚨 *ALERTA DE FALHA CRÍTICA — VN AI ECOSYSTEM*\\n\\n` +\n  `🆔 *Correlation ID:* \`${correlationId}\`\\n` +\n  `⚙️ *Workflow:* \`${workflow.name}\` (ID: ${workflow.id})\\n` +\n  `⏱️ *Timestamp:* \`${timestamp}\`\\n` +\n  `❌ *Erro:* ${error.message || 'Erro não especificado'}\\n\\n` +\n  `🔍 *Localização:* Nó \`${error.node?.name || 'Desconhecido'}\`\\n` +\n  `🛠️ *Ação:* Automação isolada. Nenhuma alteração destrutiva realizada.`;\n\nreturn [{\n  json: {\n    correlationId,\n    timestamp,\n    workflowId: workflow.id,\n    workflowName: workflow.name,\n    errorMessage: error.message,\n    alertMessage\n  }\n}];"
+      },
+      "id": "7b049d1e-c146-4dc4-bb50-32da0e25867e",
+      "name": "Format Incident Envelope",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "2140439370",
+        "text": "={{ $json.alertMessage }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "e9b28a49-9685-45cf-b008-0bfba0f69a53",
+      "name": "Dispatch Telegram Alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format Incident Envelope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Incident Envelope": {
+      "main": [
+        [
+          {
+            "node": "Dispatch Telegram Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

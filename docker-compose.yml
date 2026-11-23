@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vn_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-vn_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vn_secret_pass_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-vn_n8n}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vn_admin -d vn_n8n"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  n8n:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vn_n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB:-vn_n8n}
+      - DB_POSTGRESDB_USER=${POSTGRES_USER:-vn_admin}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD:-vn_secret_pass_2026}
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:-e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855}
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=168
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  postgres_data:
+  n8n_data:
