@@ -33,7 +33,7 @@ def get_tg_token():
         with open("/root/.config/integrations.json") as f:
             return json.load(f).get("telegram", {}).get("bot_token", "")
     except Exception:
-        return "REDACTED_TELEGRAM_TOKEN"
+        return ""
 
 TG_TOKEN = get_tg_token()
 
@@ -82,7 +82,7 @@ def customize_archetype(target_dir, archetype, project_name):
     page_tsx = target_dir / "page.tsx"
     
     # Gerar aplicação interativa real com estado, som procedural e ferramentas funcionais
-    content = f"""\"use client\";
+    content = """\"use client\";
 
 import React, {{ useState, useEffect }} from \"react\";
 import {{
@@ -300,7 +300,8 @@ export default function InteractiveEliteApp() {{
 """
     try:
         with open(page_tsx, "w", encoding="utf-8") as f:
-            f.write(content)
+            formatted_content = content.replace("{project_name.toUpperCase()}", project_name.upper()).replace("{archetype.toUpperCase()}", archetype.upper())
+            f.write(formatted_content)
         print(f"✨ Aplicação viva e interativa gravada em {page_tsx}", flush=True)
     except Exception as e:
         print(f"⚠️ Erro ao customizar page.tsx: {e}", flush=True)
