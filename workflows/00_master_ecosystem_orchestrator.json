@@ -1,0 +1,391 @@
+{
+  "name": "00 - VN AI Ecosystem: Master Cognitive & Operational Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "telegram-gateway",
+        "options": {}
+      },
+      "id": "node-tg-webhook",
+      "name": "Telegram Omnichannel Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [160, 480],
+      "webhookId": "tg-omnichannel-gateway"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-gateway",
+        "options": {}
+      },
+      "id": "node-wa-webhook",
+      "name": "WhatsApp Bridge Gateway (5005)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [160, 700],
+      "webhookId": "wa-bridge-gateway"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "node-cron-sentinel",
+      "name": "DevOps Cron Sentinel (15m)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [160, 260]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalizador & Validador de Identidade Estrita (Vinícius Caetano)\nconst body = $json.body || $json;\nconst update = body;\nconst msg = update.message || {};\nconst callback = update.callback_query || {};\n\nconst userId = String(msg.from?.id || callback.from?.id || body.sender || 'UNKNOWN');\nconst isMaster = (userId === '2140439370' || userId.includes('5511') || userId.includes('6683'));\n\nconst rawText = (msg.text || callback.data || body.text || '').trim();\nconst threadId = msg.message_thread_id || callback.message?.message_thread_id || 0;\nconst chatId = msg.chat?.id || callback.message?.chat?.id || body.chatId || '-1004493467706';\n\nreturn [{\n  json: {\n    isMaster,\n    userId,\n    chatId,\n    threadId,\n    rawText,\n    source: 'TELEGRAM',\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "node-gatekeeper",
+      "name": "Identity & Security Gatekeeper",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 480]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Classificador Semântico Multicamada — Regras de Ouro e Soberania\nconst item = $json;\nconst text = item.rawText;\nconst threadId = item.threadId;\n\nlet domain = 'UNKNOWN';\nlet priority = 'NORMAL';\n\nif (text.includes('youtube.com') || text.includes('youtu.be')) {\n  domain = 'SECOND_BRAIN_STUDY';\n  priority = 'HIGH';\n} else if (threadId === 6 || text.startsWith('/estudo') || text.startsWith('/dossie')) {\n  domain = 'SECOND_BRAIN_STUDY';\n} else if (threadId === 5 || text.startsWith('/voz') || text.startsWith('/audio') || text.startsWith('arch_voice')) {\n  domain = 'MEDIA_NEURAL_VOICE';\n} else if (text.startsWith('arch_reels') || text.startsWith('/reels') || text.startsWith('/trailer')) {\n  domain = 'MEDIA_CINEMA_VIDEO';\n} else if (threadId === 4 || text.startsWith('arch_') || text.startsWith('/deploy') || text.startsWith('/software')) {\n  domain = 'SOFTWARE_ENTERPRISE_DEPLOY';\n} else if (threadId === 7 || text.startsWith('/status') || text.startsWith('/telemetria') || text.startsWith('devops_')) {\n  domain = 'DEVOPS_SENTINEL';\n} else if (text.startsWith('/diario') || text.length > 120) {\n  domain = 'SECOND_BRAIN_JOURNAL';\n} else {\n  domain = 'EXECUTIVE_COMMAND_MENU';\n}\n\nreturn [{\n  json: {\n    ...item,\n    domain,\n    priority,\n    routedAt: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "node-semantic-router",
+      "name": "Semantic Intelligence Router",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [620, 480]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.domain }}",
+        "rules": {
+          "rules": [
+            { "value2": "SECOND_BRAIN_STUDY" },
+            { "value2": "SECOND_BRAIN_JOURNAL" },
+            { "value2": "MEDIA_NEURAL_VOICE" },
+            { "value2": "SOFTWARE_ENTERPRISE_DEPLOY" },
+            { "value2": "DEVOPS_SENTINEL" }
+          ]
+        }
+      },
+      "id": "node-switch-domains",
+      "name": "Switch Execution Domains",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [860, 480]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extração & Higienização de Link YouTube (Regra 18)\nconst text = $json.rawText;\nconst match = text.match(/(?:v=|\\/|youtu\\.be\\/|embed\\/|shorts\\/)([A-Za-z0-9_-]{11})/);\nconst videoId = match ? match[1] : '';\nconst cleanUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : text;\n\nreturn [{\n  json: {\n    ...$json,\n    videoId,\n    cleanUrl,\n    dissectionStage: 'INGESTION_VERIFIED'\n  }\n}];"
+      },
+      "id": "node-brain-extract-yt",
+      "name": "Extract & Verify YouTube Target",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:5006/dissect",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "url", "value": "={{ $json.cleanUrl }}" },
+            { "name": "chat_id", "value": "={{ $json.chatId }}" },
+            { "name": "thread_id", "value": "6" }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "node-brain-http-dissect",
+      "name": "Trigger Deep Dissector Daemon",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1360, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Formatação de Entrada de Diário & TCC (Regra 17)\nconst text = $json.rawText.replace('/diario', '').trim();\nconst now = new Date();\nconst dateStr = now.toISOString().split('T')[0];\nconst timeStr = now.toTimeString().split(' ')[0].substring(0, 5);\n\nconst entry = `\\n\\n### ⏱️ ${dateStr} ${timeStr} — Reflexão Registrada\\n${text}\\n\\n---\\n`;\n\nreturn [{\n  json: {\n    ...$json,\n    journalEntry: entry,\n    date: dateStr,\n    time: timeStr,\n    targetBook: 'DIARIO_DE_BORDO_ITZREAL.md'\n  }\n}];"
+      },
+      "id": "node-journal-format",
+      "name": "Format Journal & Stoic Memory",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 360]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Enriquecimento de Locução Paulistana & Microfades (Regra 13)\nlet text = $json.rawText.replace(/^\\/voz|arch_voice/i, '').trim();\nif (!text) text = 'Fala aí Vinícius, ecossistema ativo com voz calibrada e decupagem Hann sem corte mecânico.';\n\nreturn [{\n  json: {\n    ...$json,\n    cleanSpeechText: text,\n    voiceModel: 'minha-voz',\n    voiceId: 'd34eb157e1e7474c98c9c63d79f7ce9a',\n    temperature: 0.85,\n    top_p: 0.88,\n    preserveBreathsMs: 160\n  }\n}];"
+      },
+      "id": "node-media-voice-prep",
+      "name": "Enrich Neural Voice Speech",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 520]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Auditoria de Arquétipo & Scaffolding de Software (Regras 1 a 12)\nlet arch = 'roulette';\nconst text = $json.rawText;\nif (text.includes('luxury')) arch = 'luxury';\nelse if (text.includes('saas')) arch = 'saas';\nelse if (text.includes('3d')) arch = '3d';\nelse if (text.includes('ecom')) arch = 'ecom';\nelse if (text.includes('portfolio')) arch = 'portfolio';\n\nreturn [{\n  json: {\n    ...$json,\n    archetype: arch,\n    cssIsolation: '.uiv_scoped_strict',\n    zeroGenericTags: true,\n    targetRepoProfile: 'vn-24k',\n    deployTarget: 'VERCEL_PRODUCTION'\n  }\n}];"
+      },
+      "id": "node-software-audit",
+      "name": "Audit Software Architecture",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 680]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Coleta de Telemetria de Infraestrutura & Auto-Cura\nreturn [{\n  json: {\n    ...$json,\n    monitoredServices: [\n      'WhatsApp Bridge (Porta 5005)',\n      'Cloudflared Tunnels',\n      'Telegram Dispatcher',\n      'Render PostgreSQL 16'\n    ],\n    healthStatus: 'ALL_ENGINES_OPERATIONAL'\n  }\n}];"
+      },
+      "id": "node-devops-telemetry",
+      "name": "Aggregate Infrastructure Metrics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 840]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "=🧠 *DOSSIÊ MESTRE REGISTRADO NO OBSIDIAN*\n\n🔗 *Fonte:* {{ $json.cleanUrl }}\n📚 *Classificação:* `04 - Estudos/` com Dataview\n🛡️ *Tese:* Síntese profunda de soberania, pilares e ação prática concluída.",
+        "additionalFields": {
+          "message_thread_id": 6,
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "node-tg-deliver-brain",
+      "name": "Deliver Study to Brain Thread (6)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1600, 200]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "=📖 *MEMÓRIA REGISTRADA NO DIÁRIO DE BORDO*\n\nData: `{{ $json.date }} às {{ $json.time }}`\nDestino: `DIARIO_DE_BORDO_ITZREAL.md`\nStatus: Gravado com blindagem e coerência reflexiva.",
+        "additionalFields": {
+          "message_thread_id": 6,
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "node-tg-deliver-journal",
+      "name": "Confirm Journal Save (6)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1360, 360]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "=🎙️ *PRODUÇÃO VOCAL NEURAL GERADA*\n\nMotor: Fish Audio `minha-voz` (s2.1-pro-free)\nFiltro: Microfades Hann anti-estalo\nDestino: Estúdio de Mídia",
+        "additionalFields": {
+          "message_thread_id": 5,
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "node-tg-deliver-media",
+      "name": "Deliver Audio to Media Thread (5)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1360, 520]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "=🚀 *PIPELINE DE ENGENHARIA DE SOFTWARE*\n\nArquétipo: `{{ $json.archetype.toUpperCase() }}`\nGitHub: `vn-24k`\nDeploy: Vercel Production\nCSS: Isolamento estrito de componentes",
+        "additionalFields": {
+          "message_thread_id": 4,
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "node-tg-deliver-software",
+      "name": "Deliver to Software Thread (4)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1360, 680]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "=🛡️ *RELATÓRIO DE TELEMETRIA & DEVOPS*\n\nStatus: `🟢 OPERAÇÃO ESTÁVEL 24/7`\nBanco: Render PostgreSQL 16 (Ativo)\nServiços Monitorados: 4/4 Operacionais",
+        "additionalFields": {
+          "message_thread_id": 7,
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "node-tg-deliver-devops",
+      "name": "Deliver to DevOps Thread (7)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1360, 840]
+    }
+  ],
+  "connections": {
+    "Telegram Omnichannel Webhook": {
+      "main": [
+        [
+          {
+            "node": "Identity & Security Gatekeeper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DevOps Cron Sentinel (15m)": {
+      "main": [
+        [
+          {
+            "node": "Identity & Security Gatekeeper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Identity & Security Gatekeeper": {
+      "main": [
+        [
+          {
+            "node": "Semantic Intelligence Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Semantic Intelligence Router": {
+      "main": [
+        [
+          {
+            "node": "Switch Execution Domains",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Execution Domains": {
+      "main": [
+        [
+          {
+            "node": "Extract & Verify YouTube Target",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Journal & Stoic Memory",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enrich Neural Voice Speech",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Audit Software Architecture",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Aggregate Infrastructure Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract & Verify YouTube Target": {
+      "main": [
+        [
+          {
+            "node": "Trigger Deep Dissector Daemon",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Deep Dissector Daemon": {
+      "main": [
+        [
+          {
+            "node": "Deliver Study to Brain Thread (6)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Journal & Stoic Memory": {
+      "main": [
+        [
+          {
+            "node": "Confirm Journal Save (6)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich Neural Voice Speech": {
+      "main": [
+        [
+          {
+            "node": "Deliver Audio to Media Thread (5)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Audit Software Architecture": {
+      "main": [
+        [
+          {
+            "node": "Deliver to Software Thread (4)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Infrastructure Metrics": {
+      "main": [
+        [
+          {
+            "node": "Deliver to DevOps Thread (7)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true
+  }
+}

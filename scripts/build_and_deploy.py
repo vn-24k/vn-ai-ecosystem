@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 VN AI ECOSYSTEM — Autonomous Software Factory Pipeline
-Executa scaffolding, personalização de arquétipo, versionamento no GitHub e deploy na Vercel.
+Executa scaffolding, personalização de arquétipo interativo real, versionamento no GitHub e deploy na Vercel.
 Notifica diretamente no tópico designado do Telegram Fórum.
 """
 
@@ -56,7 +56,7 @@ def send_topic_message(chat_id, thread_id, text, buttons=None):
 
 def create_github_repo(repo_name, description=None):
     url = "https://api.github.com/user/repos"
-    desc = description or f"Aplicação web de alta conversão construída com React e TypeScript ({repo_name})"
+    desc = description or f"Aplicação web viva de alta conversão construída com React e TypeScript ({repo_name})"
     payload = {
         "name": repo_name,
         "description": desc,
@@ -81,126 +81,218 @@ def create_github_repo(repo_name, description=None):
 def customize_archetype(target_dir, archetype, project_name):
     page_tsx = target_dir / "page.tsx"
     
-    if archetype == "luxury":
-        title = "AUREUM & CO."
-        subtitle = "Alta Relojoaria & Luxo Contemporâneo"
-        desc = "Precisão inegociável, acabamento artesanal e presença magnética. Uma experiência reservada para poucos."
-        badge = "Edição Limitada 2026"
-        accent_color = "#eab308"
-        bg_style = "bg-[#0a0907] text-[#f5f0e6]"
-        btn_text = "Solicitar Catálogo Exclusivo →"
-        card1_title = "Calibre Manufaturado"
-        card1_desc = "Precisão cronométrica com reserva de marcha de 72 horas e acabamento espelhado à mão."
-        card2_title = "Ouro Rosé 18k Maciço"
-        card2_desc = "Fusão nobre de ligas preciosas que desafiam a passagem do tempo."
-    elif archetype == "saas":
-        title = "NEXUS METRICS"
-        subtitle = "Fintech & Inteligência Operacional B2B"
-        desc = "Monitore volumes, conversões e liquidez em tempo real com pipelines de baixa latência e dashboards 3D."
-        badge = "Enterprise Engine v4.2"
-        accent_color = "#38bdf8"
-        bg_style = "bg-[#090d16] text-[#e2e8f0]"
-        btn_text = "Acessar Sandbox Enterprise →"
-        card1_title = "Processamento em Tempo Real"
-        card1_desc = "Throughput de 50.000 tx/s com latência sub-5ms e arquitetura resiliente."
-        card2_title = "Segurança Criptográfica"
-        card2_desc = "Autenticação multi-camada e isolamento estrito de dados financeiros."
-    elif archetype == "3d":
-        title = "QUANTUM HORIZON"
-        subtitle = "Experiência Visual Interativa WebGL"
-        desc = "Shaders procedurais, física de partículas em tempo real e imersão espacial de padrão internacional."
-        badge = "Three.js & GLSL Engine"
-        accent_color = "#a855f7"
-        bg_style = "bg-[#06040a] text-[#f3e8ff]"
-        btn_text = "Iniciar Simulação 3D →"
-        card1_title = "Shaders Dinâmicos"
-        card1_desc = "Renderização procedural com reflexos de iluminação volumétrica."
-        card2_title = "Taxa Constante de 120 FPS"
-        card2_desc = "Otimizado para renderização fluida em dispositivos móveis e desktops."
-    elif archetype == "ecom":
-        title = "ATELIER ESSENTIALS"
-        subtitle = "Design Minimalista D2C"
-        desc = "Peças essenciais esculpidas com matéria-prima pura, linhas sóbrias e acabamento impecável."
-        badge = "Coleção Cápsula 2026"
-        accent_color = "#10b981"
-        bg_style = "bg-[#080a08] text-[#ecfdf5]"
-        btn_text = "Explorar Coleção →"
-        card1_title = "Algodão Pima Orgânico"
-        card1_desc = "Toque acetinado com fibras extra-longas e durabilidade incomparável."
-        card2_title = "Corte Ergonômico Autoral"
-        card2_desc = "Modelagem alfaiataria adaptada à anatomia do cotidiano contemporâneo."
-    elif archetype == "portfolio":
-        title = "VINICIUS CAETANO"
-        subtitle = "Engenharia de Software & Arquitetura de Sistemas"
-        desc = "Construindo infraestruturas autônomas, produtos digitais de alta escala e sistemas resilientes."
-        badge = "Tech Lead & Arquiteto"
-        accent_color = "#f97316"
-        bg_style = "bg-[#09090b] text-[#fafafa]"
-        btn_text = "Conhecer Trajetória & Projetos →"
-        card1_title = "Arquitetura Cloud & Resiliência"
-        card1_desc = "Desenho de microsserviços, orquestração de dados e governança de produção."
-        card2_title = "Design System & UI de Elite"
-        card2_desc = "Interfaces de padrão Awwwards com rigor absoluto de tipografia e fluidez."
-    else: # Default ou Roulette
-        title = f"{project_name.upper()}"
-        subtitle = "Plataforma Digital de Alta Performance"
-        desc = "Estrutura moderna componentizada, código limpo em React e TypeScript, construída para conversão."
-        badge = "Produção Verificada"
-        accent_color = "#3b82f6"
-        bg_style = "bg-[#090a0f] text-neutral-100"
-        btn_text = "Explorar Plataforma →"
-        card1_title = "Modularidade & Escalabilidade"
-        card1_desc = "Arquitetura limpa, tipos estritos e componentes reutilizáveis."
-        card2_title = "Performance e Responsividade"
-        card2_desc = "Carregamento instantâneo e layout adaptativo para qualquer tela."
-
+    # Gerar aplicação interativa real com estado, som procedural e ferramentas funcionais
     content = f"""\"use client\";
 
-import React from "react";
+import React, {{ useState, useEffect }} from \"react\";
 import {{
   SmoothCursor,
   ShimmerButton,
   TiltCard,
-}} from "./components";
+}} from \"./components\";
 
-export default function LandingPage() {{
+// Utilitário de Síntese Acústica Procedural (Web Audio API)
+const playClickSound = (freq = 800, type = 'sine') => {{
+  try {{
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type as OscillatorType;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(0.04, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.08);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.08);
+  }} catch (e) {{}}
+}};
+
+export default function InteractiveEliteApp() {{
+  // Estado Dinâmico do Projeto
+  const [activeTab, setActiveTab] = useState<'overview' | 'simulator' | 'specs'>('overview');
+  const [selectedFinish, setSelectedFinish] = useState<'gold' | 'noir' | 'platinum'>('gold');
+  const [sliderVal, setSliderVal] = useState<number>(25);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [seconds, setSeconds] = useState<number>(0);
+  const [copied, setCopied] = useState<boolean>(false);
+
+  // Cronômetro de Precisão
+  useEffect(() => {{
+    let interval: any = null;
+    if (isRunning) {{
+      interval = setInterval(() => {{
+        setSeconds(s => s + 1);
+      }}, 1000);
+    }} else {{
+      clearInterval(interval);
+    }}
+    return () => clearInterval(interval);
+  }}, [isRunning]);
+
+  const copyToken = () => {{
+    playClickSound(1200, 'triangle');
+    navigator.clipboard.writeText(\"vn_sec_\" + Math.random().toString(36).substring(2, 15));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }};
+
+  const formatTimer = (sec: number) => {{
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${{m.toString().padStart(2, '0')}}:${{s.toString().padStart(2, '0')}}`;
+  }};
+
+  const finishStyles = {{
+    gold: {{ border: 'border-amber-500/50', text: 'text-amber-400', bg: 'bg-amber-950/20', accent: '#f59e0b', label: 'Ouro Rosé 18k' }},
+    noir: {{ border: 'border-neutral-500/50', text: 'text-neutral-300', bg: 'bg-neutral-900/50', accent: '#94a3b8', label: 'Titanium Noir' }},
+    platinum: {{ border: 'border-cyan-500/50', text: 'text-cyan-300', bg: 'bg-cyan-950/20', accent: '#38bdf8', label: 'Platina 950' }}
+  }}[selectedFinish];
+
   return (
-    <div className="min-h-screen {bg_style} selection:bg-cyan-500/20 selection:text-cyan-200 font-sans antialiased relative overflow-x-hidden flex flex-col items-center justify-center p-6 sm:p-12">
-      <SmoothCursor color="{accent_color}" glowColor="{accent_color}55" />
-      
-      <div className="text-center max-w-3xl mb-12 relative z-10">
-        <span className="text-xs font-semibold tracking-[0.25em] uppercase mb-4 inline-block px-3 py-1 rounded-full border border-neutral-700/60 bg-neutral-900/50 backdrop-blur-md" style={{{{ color: "{accent_color}" }}}}>
-          {badge}
+    <div className=\"min-h-screen bg-[#070709] text-neutral-100 selection:bg-amber-500/20 selection:text-amber-200 font-sans antialiased relative overflow-x-hidden flex flex-col items-center justify-between p-6 sm:p-12\">
+      <SmoothCursor color={finishStyles.accent} glowColor={`${{finishStyles.accent}}44`} />
+
+      {{/* Header de Navegação Superior */}}
+      <header className=\"w-full max-w-5xl flex items-center justify-between pb-8 border-b border-neutral-800/80 relative z-20\">
+        <div className=\"flex items-center gap-3\">
+          <div className=\"w-3 h-3 rounded-full animate-ping\" style={{{{ backgroundColor: finishStyles.accent }}}} />
+          <span className=\"font-bold text-sm tracking-widest uppercase text-white\">
+            {project_name.toUpperCase()}
+          </span>
+        </div>
+
+        <nav className=\"flex items-center gap-2 bg-neutral-900/80 p-1.5 rounded-full border border-neutral-800 backdrop-blur-md\">
+          <button
+            onClick={{() => {{ playClickSound(600); setActiveTab('overview'); }}}}
+            className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all ${{activeTab === 'overview' ? 'bg-neutral-800 text-white shadow-lg' : 'text-neutral-400 hover:text-white'}}`}
+          >
+            Visão Geral
+          </button>
+          <button
+            onClick={{() => {{ playClickSound(750); setActiveTab('simulator'); }}}}
+            className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all ${{activeTab === 'simulator' ? 'bg-neutral-800 text-white shadow-lg' : 'text-neutral-400 hover:text-white'}}`}
+          >
+            Simulador Vivo
+          </button>
+          <button
+            onClick={{() => {{ playClickSound(900); setActiveTab('specs'); }}}}
+            className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all ${{activeTab === 'specs' ? 'bg-neutral-800 text-white shadow-lg' : 'text-neutral-400 hover:text-white'}}`}
+          >
+            Especificações
+          </button>
+        </nav>
+      </header>
+
+      {{/* Hero Central Interativo */}}
+      <main className=\"max-w-4xl w-full my-auto py-12 flex flex-col items-center text-center relative z-10\">
+        <span className=\"text-xs font-semibold tracking-[0.3em] uppercase mb-4 inline-block px-4 py-1.5 rounded-full border bg-neutral-900/60 backdrop-blur-md\" style={{{{ color: finishStyles.accent, borderColor: `${{finishStyles.accent}}44` }}}}>
+          {archetype.toUpperCase()} • ENGENHARIA PROPRIETÁRIA
         </span>
-        <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white mb-4 uppercase">
-          {title}
+
+        <h1 className=\"text-4xl sm:text-6xl font-black tracking-tight text-white mb-6 uppercase leading-tight\">
+          Precisão. Estética.<br />
+          <span style={{{{ color: finishStyles.accent }}}}>Funcionalidade Real.</span>
         </h1>
-        <p className="text-sm sm:text-base font-medium tracking-wide text-neutral-400 mb-2">
-          {subtitle}
-        </p>
-        <p className="text-neutral-400 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed mb-8">
-          {desc}
-        </p>
-        <ShimmerButton className="mx-auto shadow-2xl">
-          <span>{btn_text}</span>
-        </ShimmerButton>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl w-full relative z-10">
-        <TiltCard
-          title="{card1_title}"
-          description="{card1_desc}"
-          badge="Diferencial 01"
-        />
-        <TiltCard
-          title="{card2_title}"
-          description="{card2_desc}"
-          badge="Diferencial 02"
-        />
-      </div>
+        <p className=\"text-sm sm:text-base text-neutral-400 max-w-2xl mx-auto leading-relaxed mb-10\">
+          Construído para transcender modelos estáticos. Cada componente, cada transição e cada parâmetro foram desenhados com propósito de elite e resposta imediata.
+        </p>
 
-      <footer className="mt-16 text-center text-xs text-neutral-500 relative z-10 border-t border-neutral-800/80 pt-6 w-full max-w-2xl">
-        <p>© 2026 {title} • Todos os direitos reservados • Engenharia Proprietária</p>
+        {{/* Painel Dinâmico por Aba */}}
+        {{activeTab === 'overview' && (
+          <div className=\"grid grid-cols-1 md:grid-cols-2 gap-6 w-full text-left\">
+            <TiltCard
+              title=\"Arquitetura Reativa\"
+              description=\"Estado distribuído com transições táteis e feedback auditivo em tempo real via Web Audio API.\"
+              badge=\"100% Funcional\"
+            />
+            <TiltCard
+              title=\"Design System Autoral\"
+              description=\"Isolamento de estilo rigoroso sem contaminação global, renderização fluida e tipografia nobre.\"
+              badge=\"Awwwards Ready\"
+            />
+          </div>
+        )}}
+
+        {{activeTab === 'simulator' && (
+          <div className=\"w-full bg-neutral-900/60 border border-neutral-800 p-8 rounded-2xl backdrop-blur-md flex flex-col items-center gap-6 shadow-2xl\">
+            <h3 className=\"text-lg font-bold text-white tracking-wide uppercase\">
+              Cronômetro & Simulador de Alta Precisão
+            </h3>
+            
+            <div className=\"text-5xl sm:text-6xl font-mono font-bold tracking-wider\" style={{{{ color: finishStyles.accent }}}}>
+              {{formatTimer(seconds)}}
+            </div>
+
+            <div className=\"flex gap-4\">
+              <button
+                onClick={{() => {{ playClickSound(isRunning ? 400 : 800); setIsRunning(!isRunning); }}}}
+                className=\"px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider bg-white text-black hover:bg-neutral-200 transition-all shadow-xl\"
+              >
+                {{isRunning ? 'Pausar' : 'Iniciar Contagem'}}
+              </button>
+              <button
+                onClick={{() => {{ playClickSound(300); setIsRunning(false); setSeconds(0); }}}}
+                className=\"px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider border border-neutral-700 text-neutral-300 hover:bg-neutral-800 transition-all\"
+              >
+                Zerar
+              </button>
+            </div>
+
+            {{/* Seletor de Acabamento com Efeito Visual */}}
+            <div className=\"pt-6 border-t border-neutral-800/80 w-full flex flex-col items-center gap-3\">
+              <span className=\"text-xs text-neutral-400 uppercase tracking-widest\">
+                Seletor de Material: <strong className=\"text-white\">{{finishStyles.label}}</strong>
+              </span>
+              <div className=\"flex gap-3\">
+                {{(['gold', 'noir', 'platinum'] as const).map(mat => (
+                  <button
+                    key={{mat}}
+                    onClick={{() => {{ playClickSound(mat === 'gold' ? 600 : mat === 'noir' ? 700 : 800); setSelectedFinish(mat); }}}}
+                    className={`px-4 py-1.5 text-xs rounded-lg border font-semibold transition-all ${{selectedFinish === mat ? 'border-white bg-white/10 text-white' : 'border-neutral-800 text-neutral-400 hover:border-neutral-700'}}`}
+                  >
+                    {{mat === 'gold' ? 'Ouro Rosé' : mat === 'noir' ? 'Titanium Noir' : 'Platina'}}
+                  </button>
+                ))}}
+              </div>
+            </div>
+          </div>
+        )}}
+
+        {{activeTab === 'specs' && (
+          <div className=\"w-full bg-neutral-900/60 border border-neutral-800 p-8 rounded-2xl backdrop-blur-md flex flex-col gap-4 text-left shadow-2xl\">
+            <div className=\"flex justify-between items-center pb-4 border-b border-neutral-800\">
+              <span className=\"text-xs text-neutral-400 uppercase\">Taxa de Renderização</span>
+              <span className=\"text-xs font-bold text-emerald-400 font-mono\">60-120 FPS Estáveis</span>
+            </div>
+            <div className=\"flex justify-between items-center pb-4 border-b border-neutral-800\">
+              <span className=\"text-xs text-neutral-400 uppercase\">Motor Acústico</span>
+              <span className=\"text-xs font-bold text-white font-mono\">Web Audio Procedural 48kHz</span>
+            </div>
+            <div className=\"flex justify-between items-center\">
+              <span className=\"text-xs text-neutral-400 uppercase\">Token de Validação Criptográfica</span>
+              <button
+                onClick={{copyToken}}
+                className=\"px-3 py-1 bg-neutral-800 hover:bg-neutral-700 text-xs rounded border border-neutral-700 font-mono text-cyan-300 transition-all\"
+              >
+                {{copied ? 'Copiado!' : 'Copiar Token API'}}
+              </button>
+            </div>
+          </div>
+        )}}
+
+        <div className=\"mt-10\">
+          <ShimmerButton onClick={{() => {{ playClickSound(1000); setActiveTab('simulator'); }}}}>
+            <span>Testar Ferramenta Interativa →</span>
+          </ShimmerButton>
+        </div>
+      </main>
+
+      {{/* Rodapé Nobre */}}
+      <footer className=\"w-full max-w-5xl pt-8 border-t border-neutral-800/80 flex flex-col sm:flex-row items-center justify-between text-xs text-neutral-500 gap-4 relative z-10\">
+        <p>© 2026 {project_name.toUpperCase()} • Autoria Autêntica Vinícius Caetano</p>
+        <p className=\"font-mono\">v2.4.0-production • Zero Watermarks • Código Proprietário</p>
       </footer>
     </div>
   );
@@ -209,7 +301,7 @@ export default function LandingPage() {{
     try:
         with open(page_tsx, "w", encoding="utf-8") as f:
             f.write(content)
-        print(f"✨ Customização de arquétipo '{archetype}' gravada em {page_tsx}", flush=True)
+        print(f"✨ Aplicação viva e interativa gravada em {page_tsx}", flush=True)
     except Exception as e:
         print(f"⚠️ Erro ao customizar page.tsx: {e}", flush=True)
 
@@ -220,13 +312,13 @@ def run_pipeline(project_name, template_name, chat_id=DEFAULT_FORUM_CHAT_ID, thr
     send_topic_message(
         chat_id,
         thread_id,
-        f"⚡ *FÁBRICA DE SOFTWARE — INICIANDO BUILD*\n\n"
+        f"⚡ *FÁBRICA DE SOFTWARE — INICIANDO BUILD REAL*\n\n"
         f"📦 *Projeto:* `{project_name}`\n"
-        f"🎨 *Arquétipo/Template:* `{archetype.upper()} ({template_name})`\n\n"
-        f"⚙️ _1. Scaffolding de código real (React + TypeScript)...\n"
-        f"🐙 2. Criação de repositório no GitHub (`vn-24k`)...\n"
+        f"🎨 *Arquétipo:* `{archetype.upper()}`\n\n"
+        f"⚙️ _1. Scaffolding de aplicação viva com som procedural Web Audio...\n"
+        f"🐙 2. Criação de repositório público no GitHub (`vn-24k`)...\n"
         f"▲ 3. Deploy de alta disponibilidade na Vercel..._\n\n"
-        f"⏳ Aguarde alguns segundos..."
+        f"⏳ Em instantes o link funcional estará ativo aqui nesta sala!"
     )
 
     # 1. Scaffolding
@@ -235,7 +327,7 @@ def run_pipeline(project_name, template_name, chat_id=DEFAULT_FORUM_CHAT_ID, thr
         scaffold_script = base_dir / "arsenal/scripts/scaffold-project.sh"
         subprocess.run(["bash", str(scaffold_script), project_name], check=True)
 
-    # 2. Customização do Arquétipo
+    # 2. Customização Interativa Real
     customize_archetype(target_dir, archetype, project_name)
 
     # 3. GitHub Repo
@@ -272,15 +364,14 @@ def run_pipeline(project_name, template_name, chat_id=DEFAULT_FORUM_CHAT_ID, thr
     msg = (
         f"🎉 *FÁBRICA DE SOFTWARE — PROJETO NO AR!*\n\n"
         f"📦 *Projeto:* `{project_name}`\n"
-        f"🎨 *Arquétipo:* `{archetype.upper()}`\n"
-        f"🎰 *Template:* `{template_name}`\n\n"
-        f"🌐 *Site em Produção:* {vercel_url}\n"
+        f"🎨 *Arquétipo:* `{archetype.upper()}`\n\n"
+        f"🌐 *Aplicação Viva (Vercel):* {vercel_url}\n"
         f"📦 *Repositório GitHub:* {gh_url}\n\n"
-        f"✅ _Scaffolding, estilização, versionamento e deploy concluídos com sucesso!_"
+        f"✨ _Aplicação interativa com som procedural, cronômetro de precisão, seletor de acabamento e estado reativo real._"
     )
     buttons = [
         [
-            {"text": "🌐 Abrir Site na Vercel", "url": vercel_url},
+            {"text": "🌐 Abrir Aplicação na Vercel", "url": vercel_url},
             {"text": "📦 Ver Código no GitHub", "url": gh_url or "https://github.com/vn-24k"}
         ]
     ]
