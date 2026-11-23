@@ -1,18 +1,3 @@
-FROM n8nio/n8n:latest
-
-USER root
-RUN apk add --no-cache curl ca-certificates jq bash
-
-USER node
-
-ENV NODE_ENV=production
-ENV N8N_DIAGNOSTICS_ENABLED=false
-ENV N8N_VERSION_NOTIFICATIONS_ENABLED=false
-ENV EXECUTIONS_DATA_PRUNE=true
-ENV EXECUTIONS_DATA_MAX_AGE=168
-ENV EXECUTIONS_DATA_PRUNE_MAX_COUNT=50000
-ENV GENERIC_TIMEZONE=America/Sao_Paulo
+FROM docker.io/n8nio/n8n:latest
 
 EXPOSE 5678
-
-CMD ["n8n", "start"]
